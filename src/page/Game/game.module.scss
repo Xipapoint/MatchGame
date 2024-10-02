@@ -1,0 +1,150 @@
+.gameContainer{
+    color: white;
+    position: relative;
+    height: 100%;
+    .computerPart{
+        .info{
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            span{
+                text-align: start;
+            }
+        }
+
+        color: white;
+        position: absolute;
+        height: 50vh;
+        width: 100%;
+        border-bottom: 1px solid gray;
+        .matchList{
+            max-width: 1000px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+    }
+    .playerPart{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-direction: column;
+        transform: translateY(100%);
+        color: white;
+        position: absolute;
+        height: 50vh;
+        width: 100%; 
+        .matchList{
+            max-width: 1000px;
+            display: flex;
+            flex-wrap: wrap;
+            margin-right: 300px;
+        }
+    }
+    .userInput{
+        margin: 0 auto 10px auto;
+        display: flex;
+        align-items: center;
+        .matchInput{
+            outline: none;
+            width: 200px;
+            margin-right: 40px;
+            height: 30px;
+            font-size: 20px;
+        }
+        .incrementButton{
+            padding: 1em 3.5em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .incrementButton:hover{
+            background-color: rgb(230, 230, 230);
+        }
+    }
+    .startButton{
+        border: none;
+        border-radius: 5px;
+        background-color: rgb(115, 239, 115);
+        padding: 1em 3.5em;
+        margin-bottom: 10px;
+        cursor: pointer;
+    }
+    .startButton:hover{
+        background-color: rgb(147, 247, 147);
+    }
+    
+        @media (max-width: 480px) {
+            .toggleHistoryButton{
+                position: absolute;
+                display: block;
+                margin: 10px auto;
+                padding: 20px 10px;
+                background-color: #b4d8ff;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                top: 300px;
+                right: 0;
+            }
+            .toggleOpen{
+                top: 300px;
+                right: 150px
+            }
+
+            .computerPart{
+                .info{
+                    display: flex;
+                    flex-direction: column;
+                    position: absolute;
+                    span{
+                        text-align: start;
+                    }
+                }
+        
+                color: white;
+                position: absolute;
+                height: 50vh;
+                width: 100%;
+                border-bottom: 1px solid gray;
+                .matchList{
+                    top: 90%;
+                    right: 100px;
+                    position: absolute;
+                    max-width: 480px;
+                    display: flex;
+                    flex-wrap: wrap;
+                    margin-right: 150px;
+                    img{
+                        display: none;
+                    }
+                    span{
+                        display: inline;
+                    }
+                }
+            }
+            .playerPart{
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-direction: column;
+                transform: translateY(100%);
+                color: white;
+                position: absolute;
+                height: 50vh;
+                width: 100%; 
+                .matchList{
+                    max-width: 480px;
+                    display: flex;
+                    flex-wrap: wrap;
+                    margin-right: 150px;
+                    img{
+                        display: none;
+                    }
+                    span{
+                        display: inline;
+                    }
+                }
+            }
+    }
+}
