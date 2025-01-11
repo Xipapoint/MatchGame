@@ -1,14 +1,13 @@
 import React, { memo } from "react";
 import styles from './gameStatistics.module.scss'
+import { useAppSelector } from "../../hooks/redux";
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
-    totalMatches: number
     computerMatches: number
     humanMatches: number
 }
 
-const GameStatistics: React.FC<Props> = ({ totalMatches, computerMatches, humanMatches, ...props }) => {
-    console.log("rerendered game statistics");
-    
+const GameStatistics: React.FC<Props> = ({ computerMatches, humanMatches, ...props }) => {
+    const {totalMatches} = useAppSelector(state => state.game)    
   return (
     <div className={styles.info} {...props}>
         <span>Left matches: {totalMatches}</span>

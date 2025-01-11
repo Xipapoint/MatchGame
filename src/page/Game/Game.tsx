@@ -7,10 +7,10 @@ import { useAppSelector, useAppDispatch } from '../../hooks/redux'
 import {gameSlice} from '../../store/reducers/gameSlice'
 import RestartGameModa from '../../component/modal/RestartGameModa';
 import { SelectedHistory } from '../../interface/HistorySelect.interface';
-import GameStatistics from '../../component/GameStatistics/GameStatistics';
-import MatchesInput from '../../component/MatchesInput/MatchesInput';
-import Button from '../../component/Button/Button';
+import PlayerPart from '../../component/PlayerPart/PlayerPart';
+import ComputerPart from '../../component/ComputerPart/ComputerPart';
 
+// TODO: Move some states to global in redux
 const Game = () => {
   const {totalMatches, matchesPerTurn, isPlayingFirst, difficultMode} = useAppSelector(state => state.game)
   const {setTotalMatches, setGameSettings} = gameSlice.actions
@@ -173,8 +173,6 @@ const Game = () => {
   }, [selectedHistoryMoves])
 
   const restartGame = useCallback(() => {
-    console.log("init sett: ", initialSettings)
-    
     dispatch(setGameSettings(initialSettings.current))
     setComputerMatches(0)
     setHumanMatches(0)
@@ -190,48 +188,22 @@ const Game = () => {
 
   return (
     <div className={styles.gameContainer}>
-      <div className={styles.computerPart}>
-        <GameStatistics
-          totalMatches={totalMatches}
-          computerMatches={computerMatches}
-          humanMatches={humanMatches}
-        />
-        <h1>Computer</h1>
-        <div className={styles.matchList}>
-          {renderMatches(computerPick)}
-        </div>
-      </div>
-      <div className={styles.playerPart}>
-        <div className={styles.matchList}>
-          {renderMatches(humanPick)}
-        </div>
-        <div>
-          <div className={styles.userInput}>
-            <MatchesInput
-              type="number"
-              value={humanPick}
-              onChangeInput={handleChangeMatchInput}
-              max={matchesPerTurn}
-              disabled={!!selectedHistoryMoves}
-            />
-            <Button
-              onClick={handleIncrementMatch}
-              disabled={humanPick >= matchesPerTurn || humanPick > totalMatches  || !!selectedHistoryMoves }
-              isStart={false}
-            >
-              +1
-            </Button>
-          </div>
-          <Button
-            onClick={playerMove}
-            style={{ marginBottom: 10 }}
-            disabled={!isMyMove || humanPick > matchesPerTurn || humanPick > totalMatches || humanPick <= 0  || !!selectedHistoryMoves }
-            isStart
-          >
-            My move
-          </Button>
-        </div>
-      </div>
+      <ComputerPart
+        computerPick={computerPick}
+        humanMatches={humanMatches}
+        computerMatches={computerMatches}
+        renderMatches={renderMatches}
+      />
+      <PlayerPart
+        humanPick={humanPick}
+        handleChangeMatchInput={handleChangeMatchInput}
+        matchesPerTurn={matchesPerTurn}
+        selectedHistoryMoves={selectedHistoryMoves}
+        handleIncrementMatch={handleIncrementMatch}
+        playerMove={playerMove}
+        isMyMove={isMyMove}
+        renderMatches={renderMatches}
+      />
         <button 
           onClick={() => setHistoryVisible(!isHistoryVisible)} 
           className={`${styles.toggleHistoryButton} ${isHistoryVisible ? styles.toggleOpen : ''}`}>
