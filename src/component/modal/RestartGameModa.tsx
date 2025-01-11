@@ -10,8 +10,8 @@ const RestartGameModa: React.FC<RestartGameModalProps> = ({handleCloseModal, win
     const navigate = useNavigate()
     const handleNavigateHome = () => {
         handleCloseModal()
-        navigate('/home')
         restartGame()
+        navigate('/home')
     }
   return (
     <div className={styles.overlay}>

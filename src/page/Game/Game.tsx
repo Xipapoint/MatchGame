@@ -1,12 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { minimax } from '../../alghorithm/minimax'
 import styles from './game.module.scss'
 import HistoryList from '../../component/HistoryList/HistoryList'
 import { MoveInterface } from '../../interface/Move.interface';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux'
-import {gameSlice, GameState} from '../../store/reducers/gameSlice'
+import {gameSlice} from '../../store/reducers/gameSlice'
 import RestartGameModa from '../../component/modal/RestartGameModa';
 import { SelectedHistory } from '../../interface/HistorySelect.interface';
+import GameStatistics from '../../component/GameStatistics/GameStatistics';
+import MatchesInput from '../../component/MatchesInput/MatchesInput';
+import Button from '../../component/Button/Button';
 
 const Game = () => {
   const {totalMatches, matchesPerTurn, isPlayingFirst, difficultMode} = useAppSelector(state => state.game)
@@ -28,7 +31,6 @@ const Game = () => {
   const [waitingQueue, setWaitingQueue] = useState<MoveInterface[]>([])
   const [showModal, setShowModal] = useState(false)
   const [winner, setWinner] = useState<null | 'You' | 'Computer'>(null)
-  const [initialSettings,] = useState<GameState>({totalMatches, matchesPerTurn, isPlayingFirst, difficultMode})
   const [clearHistory, setClearHistory] = useState(false)
   const [isHistoryVisible, setHistoryVisible] = useState(true)
   const [selectedHistoryMoves, setSelectedHistoryMoves] = useState<SelectedHistory | null>(null)
@@ -49,31 +51,28 @@ const Game = () => {
     localStorage.setItem('computerMatches', computerMatches.toString());
   }, [computerMatches])
 
-  const handleChangeMatchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const initialSettings = useRef({totalMatches, matchesPerTurn, isPlayingFirst, difficultMode})
+
+  const handleChangeMatchInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value)
     setHumanPick(value)
-    
-  }
+  }, [])
 
-  const handleIncrementMatch = () => {
+  const handleIncrementMatch = useCallback(() => {
     if (humanPick < totalMatches && humanPick < matchesPerTurn) {
-      setHumanPick(prev => {
-        const value = prev + 1
-        return value
-      })
-
+      setHumanPick(prev => prev + 1)
     }
-  }
+  }, [humanPick, totalMatches, matchesPerTurn])
 
   const handleClearHistoryList = (): boolean => {
     return clearHistory
   }
 
-  const handleHistoryClick = (moves: SelectedHistory) => {
+  const handleHistoryClick = useCallback((moves: SelectedHistory | null) => {
     setSelectedHistoryMoves(moves)
-  };
-
-  const findBestMove = (matches: number, computerMatches: number, humanMatches: number): number => {
+  }, [])
+  
+  const findBestMove = useCallback((matches: number, computerMatches: number, humanMatches: number): number => {
     let bestScore = -Infinity
     let bestMove = -1
     const maxPick = Math.min(3, matches)
@@ -85,10 +84,10 @@ const Game = () => {
       }
     }
     return bestMove
-  }
+  }, [difficultMode, matchesPerTurn])
 
-  const endGame = () => {
-    const hmatches = (Number(localStorage.getItem('humanMatches'))) + 1
+  const endGame = useCallback(() => {
+    const hmatches = (Number(localStorage.getItem('humanMatches')))
     const computerWins = computerMatches % 2 === 0
     const humanWins = hmatches % 2 === 0
     
@@ -102,38 +101,9 @@ const Game = () => {
     }
     setGameOver(true)
     setShowModal(true)
-  }
+  }, [computerMatches])
 
-  const playerMove = () => {
-    if (totalMatches === 0 || gameOver || humanPick > matchesPerTurn) return
-    else if(humanPick > totalMatches) return
-    else if(humanPick <= 0) return
-    const newMatches = totalMatches - humanPick
-    dispatch(setTotalMatches(newMatches))
-    setHumanMatches(prev => {
-      const value = prev + humanPick
-      return value
-    })
-    const movePlayer: MoveInterface = {
-      type: 'human',
-      message: `Player: ${humanPick} matches.`,
-      numberOfMatches: humanPick
-    }
-    setWaitingQueue(prevQueue => [...prevQueue, movePlayer])
-    
-    
-
-    if (newMatches === 0) {
-      endGame()
-    } else {
-      setIsMyMove(false)
-      setTimeout(() => {
-        computerMove(newMatches)
-      }, 1000) 
-    }
-  }
-
-  const computerMove = (newMatches: number) => {
+  const computerMove = useCallback((newMatches: number) => {
     const computerPick = findBestMove(newMatches, computerMatches, (humanMatches))
     
     const updatedMatches = newMatches - computerPick
@@ -152,14 +122,41 @@ const Game = () => {
     } else {
       setIsMyMove(true)
     }
-  }
+  }, [computerMatches, dispatch, endGame, findBestMove, humanMatches, setTotalMatches])
 
-  const renderMatches = () => {
+  const playerMove = useCallback(() => {
+    if (totalMatches === 0 || gameOver || humanPick > matchesPerTurn) return
+    else if(humanPick > totalMatches) return
+    else if(humanPick <= 0) return
+    const newMatches = totalMatches - humanPick
+    dispatch(setTotalMatches(newMatches))
+    setHumanMatches(prev => {
+      const value = prev + humanPick
+      return value
+    })
+    const movePlayer: MoveInterface = {
+      type: 'human',
+      message: `Player: ${humanPick} matches.`,
+      numberOfMatches: humanPick
+    }
+    setWaitingQueue(prevQueue => [...prevQueue, movePlayer])
+    
+    if (newMatches === 0) {
+      endGame()
+    } else {
+      setIsMyMove(false)
+      setTimeout(() => {
+        computerMove(newMatches)
+      }, 1000) 
+    }
+  }, [dispatch, endGame, gameOver, humanPick, matchesPerTurn, totalMatches, setTotalMatches, computerMove])
+
+  const renderMatches = useCallback((pick: number) => {
     if (window.matchMedia("(max-width: 480px)").matches) {
       if(selectedHistoryMoves){
         return <span>{selectedHistoryMoves.player.numberOfMatches}</span>
       }
-      return <span>{humanPick} matches</span>
+      return <span>{pick} matches</span>
     } else {
       const matchImages = []
       if(selectedHistoryMoves){
@@ -168,38 +165,17 @@ const Game = () => {
         }
         return matchImages
       }
-      for (let i = 0; i < humanPick; i++) {
+      for (let i = 0; i < pick; i++) {
         matchImages.push(<img key={i} src="/match 64.png" alt="Match" />)
       }
       return matchImages
     }
-  };
-  
-  const renderComputerMatches = () => {
-    if (window.matchMedia("(max-width: 480px)").matches) {
-      if(selectedHistoryMoves){
-        return <span>{selectedHistoryMoves.computer.numberOfMatches}</span>
-      }
-      return <span>{computerPick} matches</span>
-    } else {
-      const matchImages = []
-      if(selectedHistoryMoves){
-        for(let i = 0; i < selectedHistoryMoves.computer.numberOfMatches; i++){
-          matchImages.push(<img key={i} src="/match 64.png" alt="Match" />)
-        }
-        return matchImages
-      }
-      for (let i = 0; i < computerPick; i++) {
-        matchImages.push(<img key={i} src="/match 64.png" alt="Match" />)
-      }
-      return matchImages
-    }
-  };
+  }, [selectedHistoryMoves])
 
-  const restartGame = () => {
+  const restartGame = useCallback(() => {
     console.log("init sett: ", initialSettings)
     
-    dispatch(setGameSettings(initialSettings))
+    dispatch(setGameSettings(initialSettings.current))
     setComputerMatches(0)
     setHumanMatches(0)
     setHumanPick(0)
@@ -210,56 +186,55 @@ const Game = () => {
     setSelectedHistoryMoves(null)
     localStorage.removeItem('humanMatches')
     localStorage.removeItem('computerMatches')
-  }
+  }, [dispatch, initialSettings, setGameSettings])
 
   return (
     <div className={styles.gameContainer}>
       <div className={styles.computerPart}>
-        <div className={styles.info}>
-          <span>Left matches: {totalMatches}</span>
-          <span>Max matches per turn: 3</span>
-          <span>Computer matches: {computerMatches}</span>
-          <span>Your matches: {humanMatches}</span>
-        </div>
-
+        <GameStatistics
+          totalMatches={totalMatches}
+          computerMatches={computerMatches}
+          humanMatches={humanMatches}
+        />
         <h1>Computer</h1>
         <div className={styles.matchList}>
-          {renderComputerMatches()}
+          {renderMatches(computerPick)}
         </div>
       </div>
       <div className={styles.playerPart}>
         <div className={styles.matchList}>
-          {renderMatches()}
+          {renderMatches(humanPick)}
         </div>
         <div>
           <div className={styles.userInput}>
-            <input
-              className={styles.matchInput}
+            <MatchesInput
               type="number"
               value={humanPick}
-              onChange={handleChangeMatchInput}
+              onChangeInput={handleChangeMatchInput}
               max={matchesPerTurn}
               disabled={!!selectedHistoryMoves}
             />
-            <button
+            <Button
               onClick={handleIncrementMatch}
-              className={styles.incrementButton}
               disabled={humanPick >= matchesPerTurn || humanPick > totalMatches  || !!selectedHistoryMoves }
+              isStart={false}
             >
               +1
-            </button>
+            </Button>
           </div>
-          <button
+          <Button
             onClick={playerMove}
-            className={styles.startButton}
+            style={{ marginBottom: 10 }}
             disabled={!isMyMove || humanPick > matchesPerTurn || humanPick > totalMatches || humanPick <= 0  || !!selectedHistoryMoves }
+            isStart
           >
             My move
-          </button>
+          </Button>
         </div>
       </div>
-        <button onClick={() => setHistoryVisible(!isHistoryVisible)} className={`${styles.toggleHistoryButton} ${isHistoryVisible ? styles.toggleOpen : ''}`}>
-          
+        <button 
+          onClick={() => setHistoryVisible(!isHistoryVisible)} 
+          className={`${styles.toggleHistoryButton} ${isHistoryVisible ? styles.toggleOpen : ''}`}>
         </button>
           {isHistoryVisible && (
             <HistoryList 

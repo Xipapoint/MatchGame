@@ -10,6 +10,30 @@
     "preview": "vite preview",
     "test-ts": "nodemon ts-node src/index.ts"
   },
+
+  "eslintConfig": {
+    "extends": "universe/native",
+    "rules": {
+      "react-hooks/exhaustive-deps": [
+        "warn",
+        {
+          "additionalHooks": "useAnimatedStyle"
+        }
+      ],
+      "prettier/prettier": [
+        "error",
+        {
+          "endOfLine": "auto"
+        }
+      ]
+    }
+  },
+  "importSort": {
+    ".js, .jsx, .ts, .tsx": {
+      "style": "module",
+      "parser": "typescript"
+    }
+  },
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.7",
     "react": "^18.3.1",

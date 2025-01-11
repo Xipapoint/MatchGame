@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import styles from './home.module.scss'
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { gameSlice } from '../../store/reducers/gameSlice';
+import DifficultOptions from '../../component/DifficultOptions/DifficultOptions';
+import CheckGameType from '../../component/CheckGameType/CheckGameType';
 
 const Home = () => {
   const { totalMatches, matchesPerTurn, isPlayingFirst } = useAppSelector(state => state.game)
-  const { setIsPlayingFirst, setMatchesPerTurn, setTotalMatches, setInitGameSettings, setDifficultMode } = gameSlice.actions
+  const { setIsPlayingFirst, setMatchesPerTurn, setTotalMatches, setInitGameSettings } = gameSlice.actions
   const [isDefaultGame, setIsDefaultGame] = useState(true)
   const dispatch = useAppDispatch()
 
@@ -17,6 +19,8 @@ const Home = () => {
   const navigate = useNavigate();
 
   const handleDefaultGameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("Rerendered checkbox");
+    
     setIsDefaultGame(e.target.checked)
     if (!isDefaultGame) {
       dispatch(setInitGameSettings())
@@ -33,10 +37,6 @@ const Home = () => {
 
   const handleNumberOfTurnMatchesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(setMatchesPerTurn(Number(e.target.value)));
-  };
-
-  const handleDifficultModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    dispatch(setDifficultMode(e.target.value));
   };
 
   const handleStartGame = () => {
@@ -56,54 +56,44 @@ const Home = () => {
       <h1>Game of matches!</h1>
       <div className={styles.settingsContainer}>
         <div className={styles.checkboxMatches}>
-          <div>
-            <label htmlFor="playingFirst">I play first:</label>
-            <input
-              type="checkbox"
-              id="playingFirst"
-              checked={isPlayingFirst}
-              onChange={handlePlayingFirstChange}
-            />
-          </div>
-          <div>
-            <label htmlFor="defaultGame">Default game</label>
-            <input
-              type="checkbox"
-              id="defaultGame"
-              checked={isDefaultGame}
-              onChange={handleDefaultGameChange}
-            />
-          </div>
+          <CheckGameType
+            type="checkbox"
+            id="playingFirst"
+            checked={isPlayingFirst}
+            onChangeInput={handlePlayingFirstChange}
+            htmlFor="playingFirst"
+            labelText='I play first:'
+          />
+          <CheckGameType
+            type="checkbox"
+            id="defaultGame"
+            checked={isDefaultGame}
+            onChangeInput={handleDefaultGameChange}
+            htmlFor="defaultGame"
+            labelText='Default game'
+          />
         </div>
 
-        <select name="difficulty" id="difficulty" onChange={handleDifficultModeChange}>
-          <option value="easy">Easy</option>
-          <option value="medium">Medium</option>
-          <option value="impossible">Impossible</option>
-        </select>
-
-
+        <DifficultOptions/>
         {!isDefaultGame && (
           <div className={styles.inputMatches}>
-            <div>
-              <label htmlFor="allMatches">Number of matches (not bigger than 31)</label>
-              <input
-                type="text"
-                name="allMatches"
-                value={totalMatches}
-                onChange={handleNumberOfAllMatchesChange}
-              />
-            </div>
-            <div>
-              <label htmlFor="matchesPerTurn">Number of matches per turn</label>
-              <input
-                type="text"
-                name="matchesPerTurn"
-                value={matchesPerTurn}
-                onChange={handleNumberOfTurnMatchesChange}
-              />
-            </div>
-          </div>
+          <CheckGameType
+            type="text"
+            name="allMatches"
+            value={totalMatches}
+            onChangeInput={handleNumberOfAllMatchesChange}
+            htmlFor="allMatches"
+            labelText='Number of matches (not bigger than 31)'
+          />
+          <CheckGameType
+            type="text"
+            name="matchesPerTurn"
+            value={matchesPerTurn}
+            onChangeInput={handleNumberOfTurnMatchesChange}
+            htmlFor="matchesPerTurn"
+            labelText='Number of matches per turn'
+          />
+        </div>
         )}
         <button className={styles.startButton} onClick={handleStartGame}>Start game</button>
       </div>
